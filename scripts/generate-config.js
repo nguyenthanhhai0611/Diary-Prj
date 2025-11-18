@@ -1,5 +1,4 @@
 // scripts/generate-config.js
-// Generate config.js from environment variables during build/deploy.
 const fs = require('fs');
 const path = require('path');
 
@@ -11,11 +10,12 @@ export const SUPABASE_URL = ${JSON.stringify(url)};
 export const SUPABASE_ANON_KEY = ${JSON.stringify(key)};
 `;
 
-const outPath = path.resolve(process.cwd(), 'config.js');
-try{
+const outPath = path.join(__dirname, '..', 'config.js');
+
+try {
   fs.writeFileSync(outPath, content, 'utf8');
-  console.log('✅ Wrote', outPath);
-}catch(err){
+  console.log(' Wrote config.js to', outPath);
+} catch (err) {
   console.error('Failed to write config.js', err);
   process.exit(1);
 }
