@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nhật Ký Hằng Ngày 🌸</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <!-- Background decorative shapes (SVG blobs, watercolor rose) -->
+  <div id="bg-decor" aria-hidden="true">
+    <svg class="bg-blob b1" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="g1" x1="0" x2="1">
+          <stop offset="0%" stop-color="#ffd8e8"/>
+          <stop offset="100%" stop-color="#ffeef6"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="420" cy="120" rx="420" ry="180" fill="url(#g1)" />
+    </svg>
+
+    <svg class="bg-blob b2" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <radialGradient id="g2">
+          <stop offset="0%" stop-color="#fff0f6"/>
+          <stop offset="100%" stop-color="#ffd8e8"/>
+        </radialGradient>
+      </defs>
+      <path d="M50,200 C150,10 450,10 550,200 C450,390 150,390 50,200 Z" fill="url(#g2)" />
+    </svg>
+
+    <!-- User-supplied photo (placed in project as dahlia.webp) -->
+    <img src="dahlia.webp" alt="dahlia" class="dahlia-photo" aria-hidden="true">
+    <!-- decorative flower strips (user-supplied) -->
+    <!-- moved into the letter card so they appear as floral borders inside the paper -->
+  </div>
+  <nav class="navbar navbar-expand-lg navbar-light bg-pink shadow-sm">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center" href="#">
+        <span class="logo-rose">🌹</span>
+        <span class="ms-2">Nhật Ký Hằng Ngày</span>
+      </a>
+      <div class="ms-auto d-flex align-items-center">
+        <button id="music-toggle" type="button" class="btn btn-sm btn-outline-light me-2" title="Phát / Tạm dừng nhạc">🎵</button>
+        <button id="auth-toggle" type="button" class="btn btn-sm btn-outline-light" title="Đăng nhập / Đăng ký">🔐 Đăng nhập</button>
+        <button id="nav-signout" type="button" class="btn btn-sm btn-outline-light ms-2" style="display:none">Đăng xuất</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Auth panel (hidden by default) -->
+  <div id="auth-panel" class="auth-panel" aria-hidden="true">
+    <h6 class="mb-2">Đăng nhập / Đăng ký</h6>
+    <div class="mb-2">
+      <input id="auth-email" type="email" class="form-control" placeholder="Email" required>
+    </div>
+    <div class="mb-2">
+      <input id="auth-password" type="password" class="form-control" placeholder="Mật khẩu" required>
+    </div>
+    <div class="d-flex gap-2 justify-content-end align-items-center">
+      <a href="#" id="auth-forgot" class="small text-decoration-none me-auto" role="button">Quên mật khẩu?</a>
+      <button id="auth-signin" class="btn btn-sm btn-outline-secondary">Đăng nhập</button>
+      <button id="auth-signup" class="btn btn-sm btn-pink">Đăng ký</button>
+    </div>
+    <div class="mt-2 text-center">
+      <button id="auth-signout" class="btn btn-sm btn-link text-muted" style="display:none">Đăng xuất</button>
+    </div>
+  </div>
+
+  <!-- soft top-right quote to complement the theme -->
+  <div class="top-quote" role="note" aria-label="Câu cảm tạ">Sự cảm tạ đi trước, sự hạnh phúc theo sau</div>
+
+  <main class="container my-5">
+    <div class="row">
+      <div class="col-md-6 mb-4">
+        <div class="card shadow-sm letter-card">
+          <div class="card-body">
+              <!-- stitch decoration element -->
+            <span class="letter-stitch" aria-hidden="true"></span>
+            <h3 class="letter-salutation">Dear Mother and Father,</h3>
+            <p class="letter-intro text-muted">thanks for giving me another day of opportunity and happiness 💖</p>
+            <form id="entry-form" class="letter-form">
+              <div class="mb-3">
+                <label class="form-label">Ngày</label>
+                <input type="date" id="entry-date" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Tâm trạng hôm nay</label>
+                <div id="icon-picker" class="d-flex flex-wrap gap-2 mb-2">
+                  <button type="button" class="icon-btn btn btn-outline-secondary" data-icon="🌸">🌸</button>
+                  <button type="button" class="icon-btn btn btn-outline-secondary" data-icon="🌹">🌹</button>
+                  <button type="button" class="icon-btn btn btn-outline-secondary" data-icon="😊">😊</button>
+                  <button type="button" class="icon-btn btn btn-outline-secondary" data-icon="☕️">☕️</button>
+                  <button type="button" class="icon-btn btn btn-outline-secondary" data-icon="🐱">🐱</button>
+                  <button type="button" class="icon-btn btn btn-outline-secondary" data-icon="🎧">🎧</button>
+                  <button type="button" class="icon-btn btn btn-outline-secondary" data-icon="✨">✨</button>
+                  <button type="button" class="icon-btn btn btn-outline-secondary" data-icon="💖">💖</button>
+                  <button type="button" class="icon-btn btn btn-outline-secondary" data-icon="📚">📚</button>
+                </div>
+                <input type="hidden" id="entry-icon" value="🌸">
+                <label class="form-label">Tiêu đề</label>
+                <input type="text" id="entry-title" class="form-control" placeholder="Hôm nay mình..." required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Nội dung</label>
+                <textarea id="entry-content" rows="6" class="form-control" placeholder="Ghi lại cảm xúc, sự kiện..." required></textarea>
+              </div>
+              <div class="d-flex justify-content-end">
+                <button class="btn btn-pink" type="submit">Lưu</button>
+              </div>
+            </form>
+          </div>
+           <!-- single floral strip inside the paper (bottom-left) -->
+            <img src="flower.png" alt="flower decor" class="floral-corner" aria-hidden="true">
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="mb-0 history-heading">Lịch sử nhật ký</h5>
+          <small class="text-muted" id="entries-count">0</small>
+        </div>
+        <!-- Preview list: show top-k recent titles; full history on separate page -->
+        <ul id="entries-list" class="list-group mb-2"></ul>
+        <div class="d-flex justify-content-end">
+          <a href="history.html" id="view-more" class="btn btn-sm btn-outline-secondary">Xem thêm</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="petal-area"></div>
+
+  <!-- Background music (place a file `music.mp3` in project root or set src via JS) -->
+  <audio id="bg-music" src="music.mp3" loop preload="none"></audio>
+
+  <!-- Supabase client (replace placeholders with your project values) -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    // Supabase config is now read from a local `config.js` module.
+    // Create `config.js` from `config.example.js` and do NOT commit your `config.js`.
+    try{
+      const cfg = await import('./config.js');
+      const { SUPABASE_URL, SUPABASE_ANON_KEY } = cfg;
+      if(SUPABASE_URL && SUPABASE_ANON_KEY){
+        window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }else{
+        console.warn('Supabase config incomplete in config.js');
+      }
+    }catch(e){
+      console.warn('No config.js found. Create one from config.example.js to enable Supabase.', e);
+    }
+  </script>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

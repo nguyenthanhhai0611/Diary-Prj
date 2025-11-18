@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đặt lại mật khẩu — Nhật Ký Hằng Ngày</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="body-font">
+  <main class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="letter-card">
+          <h4 class="history-page-title">Đặt lại mật khẩu</h4>
+          <p class="text-muted">Nhập mật khẩu mới của bạn bên dưới. Nếu liên kết đặt lại còn hiệu lực, mật khẩu sẽ được cập nhật ngay lập tức.</p>
+          <div id="status" class="mb-3 text-muted">Đang kiểm tra liên kết...</div>
+          <div id="reset-form" style="display:none">
+            <div class="mb-3">
+              <label class="form-label">Mật khẩu mới</label>
+              <input id="new-password" type="password" class="form-control" placeholder="Mật khẩu mới" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Xác nhận mật khẩu</label>
+              <input id="confirm-password" type="password" class="form-control" placeholder="Xác nhận mật khẩu" required>
+            </div>
+            <div class="d-flex justify-content-end">
+              <button id="btn-reset" class="btn btn-pink">Cập nhật mật khẩu</button>
+            </div>
+          </div>
+          <div id="done" style="display:none" class="mt-3">
+            <div class="alert alert-success">Mật khẩu đã được cập nhật. Bạn sẽ được chuyển đến trang đăng nhập.</div>
+            <a href="index.html" class="btn btn-home">Quay về trang chính</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    // Use same keys as the rest of the app (if you host these files together, these values are the ones used elsewhere)
+    const SUPABASE_URL = 'https://yohcwfpphdgjhpyyvxst.supabase.co'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaGN3ZnBwaGRnamhweXl2eHN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MjYzODgsImV4cCI6MjA3OTAwMjM4OH0.T2oz0RfULeOAErXoFxoceLsgA6r9Fo9TXs9gcXkS0G4'
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+    const statusEl = document.getElementById('status')
+    const resetForm = document.getElementById('reset-form')
+    const doneEl = document.getElementById('done')
+    const btnReset = document.getElementById('btn-reset')
+    const newPwd = document.getElementById('new-password')
+    const confirmPwd = document.getElementById('confirm-password')
+
+    // Helper to parse recovery token from URL
+    function parseRecoveryFromUrl(){
+      // Supabase may return params in hash or query string depending on version/config
+      const url = new URL(window.location.href)
+      // Check fragment/hash first (e.g., #access_token=...&type=recovery)
+      const hash = window.location.hash ? window.location.hash.substring(1) : ''
+      const params = new URLSearchParams(hash || url.search)
+      const type = params.get('type') || ''
+      const access_token = params.get('access_token') || params.get('accessToken') || null
+      return { type, access_token };
+    }
+
+    async function init(){
+      try{
+        const { type, access_token } = parseRecoveryFromUrl()
+        if(type !== 'recovery' || !access_token){
+          statusEl.textContent = 'Liên kết không hợp lệ hoặc đã hết hạn.'
+          return
+        }
+        // Try to exchange the URL for a session (supabase-js v2)
+        try{
+          const { data, error } = await supabase.auth.getSessionFromUrl({ storeSession: true })
+          if(error){
+            console.warn('getSessionFromUrl error', error)
+            // Even if this fails, still show reset form and attempt an update using access_token
+          }else if(data && data.session){
+            // session stored, user is authenticated in this tab
+            statusEl.textContent = 'Liên kết hợp lệ. Vui lòng nhập mật khẩu mới.'
+            resetForm.style.display = 'block'
+            return
+          }
+        }catch(e){
+          console.warn('getSessionFromUrl threw', e)
+        }
+
+        // If we reach here, try a fallback: we can still accept the access_token and use it in a direct API call
+        // We will show the form; when submitting, we'll call the update via the REST endpoint if necessary.
+        statusEl.textContent = 'Liên kết hợp lệ. Vui lòng nhập mật khẩu mới.'
+        resetForm.style.display = 'block'
+      }catch(err){
+        console.error(err)
+        statusEl.textContent = 'Đã xảy ra lỗi khi xử lý liên kết.'
+      }
+    }
+
+    async function submitNewPassword(e){
+      e.preventDefault()
+      const a = newPwd.value.trim()
+      const b = confirmPwd.value.trim()
+      if(!a || a.length < 6) return alert('Mật khẩu mới phải có ít nhất 6 ký tự')
+      if(a !== b) return alert('Mật khẩu xác nhận không khớp')
+
+      statusEl.textContent = 'Đang cập nhật mật khẩu...'
+
+      try{
+        // Try easiest path: call updateUser (requires a valid session). If user signed in via getSessionFromUrl earlier, this will work.
+        try{
+          const { data, error } = await supabase.auth.updateUser({ password: a })
+          if(error){
+            console.warn('updateUser error', error)
+            throw error
+          }
+          statusEl.textContent = 'Mật khẩu đã được cập nhật.'
+          resetForm.style.display = 'none'
+          doneEl.style.display = 'block'
+          // sign the user out of this temporary session and redirect to index after short delay
+          setTimeout(()=>{ window.location.href = 'index.html' }, 1500)
+          return
+        }catch(upErr){
+          console.warn('updateUser failed, trying fallback', upErr)
+        }
+
+        // Fallback attempt: use the access_token from URL and call the REST endpoint to update user (requires service role normally).
+        // Note: this fallback may not succeed depending on Supabase project settings. We keep it as last resort.
+        const { access_token } = parseRecoveryFromUrl()
+        if(!access_token) throw new Error('Không tìm thấy access token')
+
+        // Attempt to set session locally then call updateUser again
+        try{
+          await supabase.auth.setSession({ access_token })
+          const { data, error } = await supabase.auth.updateUser({ password: a })
+          if(error) throw error
+          statusEl.textContent = 'Mật khẩu đã được cập nhật.'
+          resetForm.style.display = 'none'
+          doneEl.style.display = 'block'
+          setTimeout(()=>{ window.location.href = 'index.html' }, 1500)
+          return
+        }catch(sErr){
+          console.warn('setSession/updateUser fallback failed', sErr)
+          throw sErr
+        }
+
+      }catch(err){
+        console.error('Failed to reset password', err)
+        alert('Không thể cập nhật mật khẩu. Liên kết có thể đã hết hạn hoặc server không cho phép cập nhật trực tiếp. Vui lòng thử lại hoặc liên hệ quản trị viên.')
+        statusEl.textContent = 'Không thể cập nhật mật khẩu.'
+      }
+    }
+
+    btnReset.addEventListener('click', submitNewPassword)
+    init()
+  </script>
+</body>
+</html>

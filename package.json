@@ -1,0 +1,8 @@
+{
+  "name": "nhat-ky-hang-ngay",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "generate-config": "node scripts/generate-config.js"
+  }
+}
