@@ -22,7 +22,8 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   if(form) form.addEventListener('submit', saveEntry);
 
   // initial entries preview/load
-  refreshEntriesView();
+  // Do not refresh entries until Supabase client and auth are ready.
+  // refreshEntriesView will be called after initAuth notifies auth state.
 
   // petals + icon picker + music
   try{ createPetals(14); }catch(e){}
@@ -59,6 +60,8 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   waitForSupabaseInit(5000, ()=>{
     try{
       initAuth({ onAuthChange: () => { try{ refreshEntriesView(); }catch(e){} } });
+      // initial refresh once supabase client is ready
+      try{ refreshEntriesView(); }catch(e){}
     }catch(e){ console.warn('initAuth failed', e); }
   });
 });
